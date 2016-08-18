@@ -729,6 +729,7 @@ int generate_event(char *buffer, size_t buffer_size, char *host_name, char *serv
     char *escaped_state        = expand_escapes(state);
     char *escaped_output       = expand_escapes(output);
     char *escaped_long_output  = expand_escapes(long_output);
+
     if (flapjackversion == 1) {
       int written = snprintf(buffer, buffer_size,
                                  "{"
@@ -778,7 +779,6 @@ int generate_event(char *buffer, size_t buffer_size, char *host_name, char *serv
                                   initial_recovery_delay,
                                   event_time);
    }
-
     nm_free(escaped_host_name);
     nm_free(escaped_service_name);
     nm_free(escaped_state);
