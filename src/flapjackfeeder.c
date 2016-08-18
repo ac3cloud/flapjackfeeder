@@ -729,9 +729,9 @@ int generate_event(char *buffer, size_t buffer_size, char *host_name, char *serv
     char *escaped_state        = expand_escapes(state);
     char *escaped_output       = expand_escapes(output);
     char *escaped_long_output  = expand_escapes(long_output);
-
-    if (flapjackversion == 1) {
-      int written = snprintf(buffer, buffer_size,
+    int written = 0;
+    if (flapjack_version == 1) {
+      written = snprintf(buffer, buffer_size,
                                  "{"
                                   "\"entity\":\"%s\","                   // HOSTNAME
                                   "\"check\":\"%s\","                    // SERVICENAME
@@ -754,7 +754,7 @@ int generate_event(char *buffer, size_t buffer_size, char *host_name, char *serv
                                   repeat_failure_delay,
                                   event_time);
     } else {
-      int written = snprintf(buffer, buffer_size,
+      written = snprintf(buffer, buffer_size,
                                  "{"
                                   "\"entity\":\"%s\","                   // HOSTNAME
                                   "\"check\":\"%s\","                    // SERVICENAME
