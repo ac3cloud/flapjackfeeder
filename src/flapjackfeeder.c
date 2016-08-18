@@ -258,7 +258,7 @@ int npcdmod_handle_data(int event_type, void *data) {
 
             nm_free(currentcustomvar);
 
-            if (hostchkdata->type == NEBTYPE_HOSTCHECK_PROCESSED) {
+            if (hostchkdata->type == NEBTYPE_HOSTCHECK_PROCESSED && hoststate[hostchkdata->state] != "UNKNOWN" && hoststate[hostchkdata->state] != 3) {
 
                 int written = generate_event(push_buffer, PERFDATA_BUFFER,
                     hostchkdata->host_name,
@@ -315,7 +315,7 @@ int npcdmod_handle_data(int event_type, void *data) {
         /* an aggregated status data dump just started or ended... */
         if ((srvchkdata = (nebstruct_service_check_data *) data)) {
 
-            if (srvchkdata->type == NEBTYPE_SERVICECHECK_PROCESSED) {
+            if (srvchkdata->type == NEBTYPE_SERVICECHECK_PROCESSED && servicestate[srvchkdata->state] != "UNKNOWN" && servicestate[srvchkdata->state] != 3) {
 
                 /* find the nagios service object for this service */
                 service = find_service(srvchkdata->host_name, srvchkdata->service_description);
@@ -729,31 +729,55 @@ int generate_event(char *buffer, size_t buffer_size, char *host_name, char *serv
     char *escaped_state        = expand_escapes(state);
     char *escaped_output       = expand_escapes(output);
     char *escaped_long_output  = expand_escapes(long_output);
-
-    int written = snprintf(buffer, buffer_size,
-                            "{"
-                                "\"entity\":\"%s\","                   // HOSTNAME
-                                "\"check\":\"%s\","                    // SERVICENAME
-                                "\"type\":\"service\","                // type
-                                "\"state\":\"%s\","                    // HOSTSTATE
-                                "\"summary\":\"%s\","                  // HOSTOUTPUT
-                                "\"details\":\"%s\","                  // HOSTlongoutput
-                                "\"tags\":[%s],"                       // tags
-                                "\"initial_failure_delay\":%lu,"       // initial_failure_delay
-                                "\"repeat_failure_delay\":%lu,"        // repeat_failure_delay
-                                "\"initial_recovery_delay\":%lu,"      // initial_recovery_delay
-                                "\"time\":%d"                          // TIMET
-                            "}",
-                                escaped_host_name,
-                                escaped_service_name,
-                                escaped_state,
-                                escaped_output,
-                                escaped_long_output,
-                                tags,
-                                initial_failure_delay,
-                                repeat_failure_delay,
-                                initial_recovery_delay,
-                                event_time);
+    if (flapjackversion == 1) {
+      int written = snprintf(buffer, buffer_size,
+                                 "{"
+                                  "\"entity\":\"%s\","                   // HOSTNAME
+                                  "\"check\":\"%s\","                    // SERVICENAME
+                                  "\"type\":\"service\","                // type
+                                  "\"state\":\"%s\","                    // HOSTSTATE
+                                  "\"summary\":\"%s\","                  // HOSTOUTPUT
+                                  "\"details\":\"%s\","                  // HOSTlongoutput
+                                  "\"tags\":[%s],"                       // tags
+                                  "\"initial_failure_delay\":%lu,"       // initial_failure_delay
+                                  "\"repeat_failure_delay\":%lu,"        // repeat_failure_delay
+                                  "\"time\":%d"                          // TIMET
+                                  "}",
+                                  escaped_host_name,
+                                  escaped_service_name,
+                                  escaped_state,
+                                  escaped_output,
+                                  escaped_long_output,
+                                  tags,
+                                  initial_failure_delay,
+                                  repeat_failure_delay,
+                                  event_time);
+    } else {
+      int written = snprintf(buffer, buffer_size,
+                                 "{"
+                                  "\"entity\":\"%s\","                   // HOSTNAME
+                                  "\"check\":\"%s\","                    // SERVICENAME
+                                  "\"type\":\"service\","                // type
+                                  "\"state\":\"%s\","                    // HOSTSTATE
+                                  "\"summary\":\"%s\","                  // HOSTOUTPUT
+                                  "\"details\":\"%s\","                  // HOSTlongoutput
+                                  "\"tags\":[%s],"                       // tags
+                                  "\"initial_failure_delay\":%lu,"       // initial_failure_delay
+                                  "\"repeat_failure_delay\":%lu,"        // repeat_failure_delay
+                                  "\"initial_recovery_delay\":%lu,"      // initial_recovery_delay
+                                  "\"time\":%d"                          // TIMET
+                                  "}",
+                                  escaped_host_name,
+                                  escaped_service_name,
+                                  escaped_state,
+                                  escaped_output,
+                                  escaped_long_output,
+                                  tags,
+                                  initial_failure_delay,
+                                  repeat_failure_delay,
+                                  initial_recovery_delay,
+                                  event_time);
+   }
 
     nm_free(escaped_host_name);
     nm_free(escaped_service_name);
